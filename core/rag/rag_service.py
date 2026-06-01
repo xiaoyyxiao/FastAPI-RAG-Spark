@@ -3,11 +3,7 @@ from .vector_store import vector_store
 
 
 def split_text(text, chunk_size=300):
-    """
-    文本切块
-    """
     chunks = []
-
     start = 0
 
     while start < len(text):
@@ -20,28 +16,28 @@ def split_text(text, chunk_size=300):
 
 
 def add_document_to_rag(text):
-    """
-    文档进入知识库
-    """
-
     chunks = split_text(text)
-
     embeddings = []
 
     for chunk in chunks:
         emb = embed_text(chunk)
         embeddings.append(emb)
 
-    vector_store.add_embeddings(embeddings, chunks)
+    if embeddings:
+        vector_store.add_embeddings(embeddings, chunks)
 
 
 def retrieve_docs(question, k=3):
-    """
-    检索相关文档
-    """
+    if not vector_store.has_embeddings():
+        return []
 
     q_emb = embed_text(question)
+    return vector_store.search(q_emb, k)
 
-    docs = vector_store.search(q_emb, k)
 
-    return docs
+def retrieve_docs_with_scores(question, k=3):
+    if not vector_store.has_embeddings():
+        return []
+
+    q_emb = embed_text(question)
+    return vector_store.search_with_scores(q_emb, k)
