@@ -68,14 +68,14 @@ Example request bodies for `/api/v1/question/ask`:
 
 ```json
 {
-  "question": "什么是 RAG？",
+  "question": "question",
   "mode": "general"
 }
 ```
 
 ```json
 {
-  "question": "总结知识库中的 RAG 定义",
+  "question": "question",
   "mode": "rag",
   "top_k": 3
 }
@@ -83,7 +83,7 @@ Example request bodies for `/api/v1/question/ask`:
 
 ```json
 {
-  "question": "总结这份文档的核心内容",
+  "question": "question",
   "mode": "doc",
   "doc_id": 1
 }
