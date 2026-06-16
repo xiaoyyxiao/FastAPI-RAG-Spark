@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAG 控制台</title>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --surface: rgba(255, 249, 240, 0.88);
+      --surface-strong: #fff9f0;
+      --ink: #1f1a17;
+      --muted: #6e655c;
+      --line: rgba(31, 26, 23, 0.1);
+      --accent: #c26535;
+      --accent-deep: #8d421b;
+      --forest: #1d7268;
+      --gold: #c69b2f;
+      --danger: #b8473d;
+      --ok: #237e55;
+      --shadow: 0 24px 70px rgba(69, 42, 18, 0.12);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(194, 101, 53, 0.18), transparent 30%),
+        radial-gradient(circle at 90% 0%, rgba(29, 114, 104, 0.16), transparent 26%),
+        linear-gradient(180deg, #f8f1e7 0%, #efe4d3 100%);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 24px 18px 40px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+
+    .hero-main {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(194, 101, 53, 0.26), transparent 72%);
+      right: -50px;
+      bottom: -70px;
+    }
+
+    .hero-main h1 {
+      margin: 0 0 10px;
+      font-size: clamp(34px, 4vw, 56px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-main p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+      max-width: 760px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(31, 26, 23, 0.06);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hero-side {
+      padding: 24px;
+      color: white;
+      background:
+        linear-gradient(145deg, rgba(29, 114, 104, 0.97), rgba(21, 72, 68, 0.97));
+    }
+
+    .hero-side h2 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    .pulse-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .pulse {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .pulse .label {
+      font-size: 12px;
+      opacity: 0.76;
+      margin-bottom: 6px;
+    }
+
+    .pulse .value {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 12px 20px rgba(141, 66, 27, 0.24);
+      transition: transform 150ms ease, opacity 150ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: rgba(31, 26, 23, 0.08);
+      color: var(--ink);
+      box-shadow: none;
+    }
+
+    .timestamp {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, rgba(194, 101, 53, 0.95), rgba(198, 155, 47, 0.72));
+    }
+
+    .stat .eyebrow {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .stat .value {
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .stat .hint {
+      color: var(--muted);
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .sidebar {
+      padding: 14px;
+      align-self: start;
+      position: sticky;
+      top: 18px;
+    }
+
+    .nav-title {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 8px 10px 14px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      width: 100%;
+      text-align: left;
+      border-radius: 18px;
+      background: transparent;
+      color: var(--ink);
+      box-shadow: none;
+      padding: 12px 14px;
+      font-weight: 700;
+    }
+
+    .nav button.active {
+      background: linear-gradient(135deg, rgba(194, 101, 53, 0.15), rgba(141, 66, 27, 0.06));
+      color: var(--accent-deep);
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .panel.hidden {
+      display: none;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .form-grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--ink);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .result-box,
+    .list-box {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.52);
+      border-radius: 18px;
+      padding: 16px;
+      min-height: 160px;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.56);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      align-items: start;
+    }
+
+    .item h4 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(31, 26, 23, 0.07);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.ok {
+      background: rgba(35, 126, 85, 0.14);
+      color: var(--ok);
+    }
+
+    .badge.warn {
+      background: rgba(198, 155, 47, 0.18);
+      color: #7b5d00;
+    }
+
+    .badge.fail {
+      background: rgba(184, 71, 61, 0.14);
+      color: var(--danger);
+    }
+
+    .empty {
+      padding: 18px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      color: var(--muted);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: rgba(31, 26, 23, 0.92);
+      color: white;
+      padding: 14px 16px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: 180ms ease;
+      max-width: 380px;
+      z-index: 20;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1220px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .hero,
+      .stats,
+      .split,
+      .form-grid,
+      .form-grid.three {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <div class="card hero-main">
+        <h1>RAG 控制台</h1>
+        <p>
+          这是当前 FastAPI RAG 系统的单页控制台。你可以在这里完成登录、文档管理、问答调试、
+          会话追踪、反馈评测和运营观察，而不需要频繁切回 Swagger。
+        </p>
+        <div class="hero-meta">
+          <span class="pill" id="metaUser">当前用户：未登录</span>
+          <span class="pill" id="metaPrimary">主 Provider：-</span>
+          <span class="pill" id="metaFallback">Fallback：-</span>
+          <span class="pill" id="metaSpark">Spark：-</span>
+        </div>
+      </div>
+      <div class="card hero-side">
+        <h2>运行脉搏</h2>
+        <div class="pulse-grid">
+          <div class="pulse">
+            <div class="label">最近 50 次平均耗时</div>
+            <div class="value" id="pulseLatency">-</div>
+          </div>
+          <div class="pulse">
+            <div class="label">最近 50 次平均 Overlap</div>
+            <div class="value" id="pulseOverlap">-</div>
+          </div>
+          <div class="pulse">
+            <div class="label">最近 50 次 Fallback</div>
+            <div class="value" id="pulseFallback">-</div>
+          </div>
+          <div class="pulse">
+            <div class="label">反馈分布</div>
+            <div class="value" id="pulseFeedback">-</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <div class="toolbar-actions">
+        <button id="refreshAllButton">刷新全局数据</button>
+        <button class="secondary" id="openDocsButton">打开 Swagger</button>
+      </div>
+      <div class="timestamp" id="lastUpdated">尚未刷新</div>
+    </div>
+
+    <section class="stats">
+      <div class="card stat">
+        <div class="eyebrow">Trace 总量</div>
+        <div class="value" id="statTraces">-</div>
+        <div class="hint">累计问答链路记录</div>
+      </div>
+      <div class="card stat">
+        <div class="eyebrow">反馈总量</div>
+        <div class="value" id="statFeedback">-</div>
+        <div class="hint">用户提交的 up / down</div>
+      </div>
+      <div class="card stat">
+        <div class="eyebrow">评测均分</div>
+        <div class="value" id="statScore">-</div>
+        <div class="hint">LLM-as-a-judge 平均分</div>
+      </div>
+      <div class="card stat">
+        <div class="eyebrow">Fail 数量</div>
+        <div class="value" id="statFail">-</div>
+        <div class="hint">低质量样本数量</div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <aside class="card sidebar">
+        <div class="nav-title">控制台模块</div>
+        <div class="nav">
+          <button class="active" data-panel="panel-login">账号与模型</button>
+          <button data-panel="panel-docs">文档管理</button>
+          <button data-panel="panel-ask">问答调试</button>
+          <button data-panel="panel-conversations">会话与 Trace</button>
+          <button data-panel="panel-ops">运营分析</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="card panel" id="panel-login">
+          <div class="panel-header">
+            <div>
+              <h2>账号与模型状态</h2>
+              <div class="panel-subtitle">先完成登录，再在这里查看当前 Provider 健康状态</div>
+            </div>
+          </div>
+
+          <div class="split">
+            <div>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="loginUsername">用户名</label>
+                  <input id="loginUsername" value="admin" />
+                </div>
+                <div class="field">
+                  <label for="loginPassword">密码</label>
+                  <input id="loginPassword" type="password" value="admin123456" />
+                </div>
+              </div>
+              <div class="panel-actions">
+                <button id="loginButton">登录</button>
+                <button class="secondary" id="healthButton">刷新模型状态</button>
+              </div>
+            </div>
+            <div class="result-box">
+              <pre id="loginResult">这里会显示登录结果和当前模型健康状态。</pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="card panel hidden" id="panel-docs">
+          <div class="panel-header">
+            <div>
+              <h2>文档管理</h2>
+              <div class="panel-subtitle">上传文档、刷新文档列表，并直接删除指定文档</div>
+            </div>
+          </div>
+
+          <div class="split">
+            <div>
+              <div class="form-grid">
+                <div class="field full">
+                  <label for="docUpload">上传文档</label>
+                  <input id="docUpload" type="file" />
+                </div>
+              </div>
+              <div class="panel-actions">
+                <button id="uploadDocButton">上传文档</button>
+                <button class="secondary" id="refreshDocsButton">刷新文档列表</button>
+              </div>
+
+              <div class="form-grid" style="margin-top:18px;">
+                <div class="field">
+                  <label for="deleteDocId">删除文档 ID</label>
+                  <input id="deleteDocId" placeholder="例如 1" />
+                </div>
+              </div>
+              <div class="panel-actions">
+                <button class="secondary" id="deleteDocButton">删除文档</button>
+              </div>
+            </div>
+            <div class="result-box">
+              <pre id="docActionResult">这里会显示上传 / 删除结果。</pre>
+            </div>
+          </div>
+
+          <div class="list-box" style="margin-top:18px;">
+            <div class="panel-header" style="margin-bottom:12px;">
+              <div>
+                <h2 style="font-size:18px;">文档列表</h2>
+                <div class="panel-subtitle">展示当前已上传文档及状态</div>
+              </div>
+            </div>
+            <div class="list" id="docsList"></div>
+          </div>
+        </section>
+
+        <section class="card panel hidden" id="panel-ask">
+          <div class="panel-header">
+            <div>
+              <h2>问答调试台</h2>
+              <div class="panel-subtitle">支持 general / rag / doc，多轮会话和自动评测</div>
+            </div>
+          </div>
+
+          <div class="form-grid three">
+            <div class="field">
+              <label for="askMode">问答模式</label>
+              <select id="askMode">
+                <option value="general">general</option>
+                <option value="rag" selected>rag</option>
+                <option value="doc">doc</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="askConversationId">会话 ID</label>
+              <input id="askConversationId" placeholder="留空则新建会话" />
+            </div>
+            <div class="field">
+              <label for="askDocId">文档 ID</label>
+              <input id="askDocId" placeholder="doc 模式使用" />
+            </div>
+            <div class="field">
+              <label for="askTopK">Top K</label>
+              <input id="askTopK" type="number" min="1" max="10" value="3" />
+            </div>
+            <div class="field">
+              <label for="askEvaluate">自动评测</label>
+              <select id="askEvaluate">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="askReturnRefs">返回引用</label>
+              <select id="askReturnRefs">
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="askQuestion">问题</label>
+              <textarea id="askQuestion">这个系统支持什么能力？</textarea>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button id="askButton">提交问答</button>
+            <button class="secondary" id="loadTracesButton">刷新最近 Trace</button>
+          </div>
+
+          <div class="split" style="margin-top:18px;">
+            <div class="result-box">
+              <pre id="askResult">这里会显示问答结果。</pre>
+            </div>
+            <div class="result-box">
+              <pre id="traceQuickView">这里会显示最近一次 trace 关键信息。</pre>
+            </div>
+          </div>
+
+          <div class="split" style="margin-top:18px;">
+            <div class="card" style="padding:18px; border-radius:18px; background:rgba(31,26,23,0.03);">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">提交反馈</h2>
+                  <div class="panel-subtitle">基于最近 trace_id 提交 up / down</div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="feedbackTraceId">Trace ID</label>
+                  <input id="feedbackTraceId" />
+                </div>
+                <div class="field">
+                  <label for="feedbackRating">评分</label>
+                  <select id="feedbackRating">
+                    <option value="up">up</option>
+                    <option value="down">down</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label for="feedbackComment">备注</label>
+                  <textarea id="feedbackComment">回答比较准确</textarea>
+                </div>
+              </div>
+              <div class="panel-actions">
+                <button class="secondary" id="feedbackButton">提交反馈</button>
+              </div>
+            </div>
+
+            <div class="card" style="padding:18px; border-radius:18px; background:rgba(31,26,23,0.03);">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">独立评测</h2>
+                  <div class="panel-subtitle">手动提交问题、答案和参考资料做评测</div>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="evalTraceId">Trace ID</label>
+                  <input id="evalTraceId" placeholder="可选" />
+                </div>
+                <div class="field full">
+                  <label for="evalQuestion">问题</label>
+                  <textarea id="evalQuestion"></textarea>
+                </div>
+                <div class="field full">
+                  <label for="evalAnswer">答案</label>
+                  <textarea id="evalAnswer"></textarea>
+                </div>
+                <div class="field full">
+                  <label for="evalExpectedAnswer">期望答案</label>
+                  <textarea id="evalExpectedAnswer"></textarea>
+                </div>
+                <div class="field full">
+                  <label for="evalReferences">参考资料，每行一条</label>
+                  <textarea id="evalReferences"></textarea>
+                </div>
+              </div>
+              <div class="panel-actions">
+                <button class="secondary" id="evaluateButton">执行评测</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card panel hidden" id="panel-conversations">
+          <div class="panel-header">
+            <div>
+              <h2>会话与 Trace</h2>
+              <div class="panel-subtitle">查看多轮对话、最近 Trace 和单次 Trace 详情</div>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button id="refreshConversationsButton">刷新会话</button>
+            <button class="secondary" id="refreshTraceListButton">刷新 Trace</button>
+          </div>
+
+          <div class="split" style="margin-top:18px;">
+            <div class="list-box">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">会话列表</h2>
+                  <div class="panel-subtitle">点击“查看详情”会加载消息内容</div>
+                </div>
+              </div>
+              <div class="list" id="conversationList"></div>
+            </div>
+            <div class="list-box">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">Trace 列表</h2>
+                  <div class="panel-subtitle">展示最近问答链路和基本耗时</div>
+                </div>
+              </div>
+              <div class="list" id="traceList"></div>
+            </div>
+          </div>
+
+          <div class="split" style="margin-top:18px;">
+            <div class="result-box">
+              <pre id="conversationDetail">这里显示会话详情。</pre>
+            </div>
+            <div class="result-box">
+              <pre id="traceDetail">这里显示单次 Trace 详情。</pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="card panel hidden" id="panel-ops">
+          <div class="panel-header">
+            <div>
+              <h2>运营分析</h2>
+              <div class="panel-subtitle">总览、低分评测、低 overlap 检索和 fallback 都集中在这里</div>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="list-box">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">总览指标</h2>
+                  <div class="panel-subtitle">适合快速观察整体运行状态</div>
+                </div>
+              </div>
+              <pre id="opsOverviewResult">这里会显示运营总览。</pre>
+            </div>
+            <div class="list-box">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">反馈与评测摘要</h2>
+                  <div class="panel-subtitle">帮助快速识别值得排查的样本</div>
+                </div>
+              </div>
+              <pre id="opsAuxResult">这里会显示评测与反馈摘要。</pre>
+            </div>
+          </div>
+
+          <div class="split" style="margin-top:18px;">
+            <div class="list-box">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">低分评测</h2>
+                  <div class="panel-subtitle">优先修复低分和 fail 样本</div>
+                </div>
+              </div>
+              <div class="list" id="lowScoreList"></div>
+            </div>
+            <div class="list-box">
+              <div class="panel-header" style="margin-bottom:12px;">
+                <div>
+                  <h2 style="font-size:18px;">Fallback 与低命中样本</h2>
+                  <div class="panel-subtitle">看主 Provider 和检索质量的异常点</div>
+                </div>
+              </div>
+              <div class="list" id="opsFallbackList"></div>
+              <div class="list" id="lowOverlapList" style="margin-top:12px;"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const state = {
+      user: null,
+      lastAsk: null,
+      docs: [],
+      conversations: [],
+      traces: [],
+    };
+
+    const endpoints = {
+      login: "/api/v1/auth/login",
+      docsList: "/api/v1/docs/list",
+      docsUpload: "/api/v1/docs/upload",
+      docsGet: (id) => `/api/v1/docs/get/${id}`,
+      docsDelete: (id, username, password) =>
+        `/api/v1/docs/delete/${id}?admin_username=${encodeURIComponent(username)}&admin_password=${encodeURIComponent(password)}`,
+      ask: "/api/v1/question/ask",
+      evaluate: "/api/v1/question/evaluate",
+      feedback: "/api/v1/question/feedback",
+      conversations: "/api/v1/question/conversations",
+      conversation: (id) => `/api/v1/question/conversations/${id}`,
+      traces: "/api/v1/question/traces?limit=12",
+      trace: (id) => `/api/v1/question/traces/${id}`,
+      feedbackList: "/api/v1/question/feedback?limit=20",
+      evaluations: "/api/v1/question/evaluations?limit=20",
+      llmHealth: "/api/v1/question/llm/health",
+      opsOverview: "/api/v1/question/ops/overview",
+      lowScore: "/api/v1/question/ops/evaluations/low-score?limit=6&score_threshold=80",
+      fallbacks: "/api/v1/question/ops/traces/fallbacks?limit=6",
+      lowOverlap: "/api/v1/question/ops/traces/low-overlap?limit=6&overlap_threshold=0.35",
+    };
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function showToast(message, type = "info") {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.style.background = type === "error" ? "rgba(184, 71, 61, 0.95)" : "rgba(31, 26, 23, 0.92)";
+      toast.classList.add("visible");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove("visible"), 2200);
+    }
+
+    function setText(id, text) {
+      const el = $(id);
+      if (el) el.textContent = text;
+    }
+
+    function escapeHtml(text = "") {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function formatJson(data) {
+      return JSON.stringify(data, null, 2);
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      return String(value).replace("T", " ").slice(0, 19);
+    }
+
+    function renderList(containerId, items, renderer, emptyText) {
+      const root = $(containerId);
+      if (!root) return;
+      if (!items || !items.length) {
+        root.innerHTML = `<div class="empty">${emptyText}</div>`;
+        return;
+      }
+      root.innerHTML = items.map(renderer).join("");
+    }
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = text;
+      }
+      if (!response.ok) {
+        throw new Error(typeof data === "object" && data ? data.detail || data.msg || response.statusText : response.statusText);
+      }
+      return data;
+    }
+
+    function getAuth() {
+      return {
+        username: $("loginUsername").value.trim(),
+        password: $("loginPassword").value.trim(),
+      };
+    }
+
+    function updateMetaFromHealth(health) {
+      setText("metaPrimary", `主 Provider：${health?.primary_provider || "-"}`);
+      setText("metaFallback", `Fallback：${health?.fallback_provider || "-"}`);
+      setText("metaSpark", `Spark：${health?.providers_health?.spark ? "可用" : "不可用"}`);
+    }
+
+    function updateStatsFromOverview(overview) {
+      const totals = overview?.totals || {};
+      const runtime = overview?.recent_runtime_summary || {};
+      const evaluation = overview?.evaluation_summary || {};
+      const feedback = overview?.feedback_distribution || {};
+
+      setText("statTraces", String(totals.traces ?? 0));
+      setText("statFeedback", String(totals.feedback ?? 0));
+      setText("statScore", Number(evaluation.avg_score ?? 0).toFixed(1));
+      setText("statFail", String(evaluation.fail_count ?? 0));
+
+      setText("pulseLatency", `${Math.round(runtime.avg_total_latency_ms_last_50 || 0)}ms`);
+      setText("pulseOverlap", Number(runtime.avg_query_overlap_last_50 || 0).toFixed(2));
+      setText("pulseFallback", String(runtime.fallback_count_last_50 ?? 0));
+      setText("pulseFeedback", `👍 ${feedback.up || 0} / 👎 ${feedback.down || 0}`);
+    }
+
+    function docCard(doc) {
+      return `
+        <article class="item">
+          <div class="item-head">
+            <div>
+              <h4>${escapeHtml(doc.filename || "未命名文档")}</h4>
+              <div class="muted">ID ${escapeHtml(doc.id)} · ${escapeHtml(doc.file_type || "-")} · ${escapeHtml(doc.file_size || 0)} bytes</div>
+            </div>
+            <span class="badge ${doc.status === "ready" ? "ok" : doc.status === "failed" ? "fail" : "warn"}">${escapeHtml(doc.status || "-")}</span>
+          </div>
+          <div class="badge-row">
+            <span class="badge">内容长度 ${escapeHtml(doc.content_length ?? "-")}</span>
+            ${doc.error_message ? `<span class="badge fail">${escapeHtml(doc.error_message)}</span>` : ""}
+          </div>
+        </article>
+      `;
+    }
+
+    function conversationCard(item) {
+      return `
+        <article class="item">
+          <div class="item-head">
+            <div>
+              <h4>${escapeHtml(item.title || "未命名会话")}</h4>
+              <div class="muted">ID ${escapeHtml(item.id)} · ${formatDate(item.updated_at)}</div>
+            </div>
+            <button class="secondary" data-conversation-id="${escapeHtml(item.id)}">查看详情</button>
+          </div>
+          <div class="badge-row">
+            <span class="badge">消息数 ${escapeHtml(item.message_count ?? 0)}</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function traceCard(item) {
+      return `
+        <article class="item">
+          <div class="item-head">
+            <div>
+              <h4>${escapeHtml(item.question || "未命名问题")}</h4>
+              <div class="muted">${formatDate(item.created_at)} · ${escapeHtml(item.trace_id || "-")}</div>
+            </div>
+            <button class="secondary" data-trace-id="${escapeHtml(item.trace_id)}">查看详情</button>
+          </div>
+          <div class="badge-row">
+            <span class="badge ${item.provider_name === "spark" ? "ok" : "warn"}">${escapeHtml(item.provider_name || "unknown")}</span>
+            <span class="badge">命中 ${escapeHtml(item.retrieval_count ?? 0)}</span>
+            <span class="badge">总耗时 ${escapeHtml(item.total_latency_ms ?? 0)} ms</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function lowScoreCard(item) {
+      return `
+        <article class="item">
+          <div class="item-head">
+            <div>
+              <h4>${escapeHtml(item.question || "未命名问题")}</h4>
+              <div class="muted">${formatDate(item.created_at)} · ${escapeHtml(item.trace_id || "-")}</div>
+            </div>
+            <span class="badge fail">${escapeHtml(item.score ?? "-")}</span>
+          </div>
+          <div class="badge-row">
+            <span class="badge ${item.verdict === "pass" ? "ok" : "fail"}">${escapeHtml(item.verdict || "unknown")}</span>
+            <span class="badge">G ${escapeHtml(item.groundedness ?? "-")}</span>
+            <span class="badge">R ${escapeHtml(item.relevance ?? "-")}</span>
+            <span class="badge">C ${escapeHtml(item.completeness ?? "-")}</span>
+            <span class="badge">Cl ${escapeHtml(item.clarity ?? "-")}</span>
+          </div>
+          <div class="muted" style="margin-top:8px;">${escapeHtml(item.reason || "无原因说明")}</div>
+        </article>
+      `;
+    }
+
+    function fallbackCard(item) {
+      return `
+        <article class="item">
+          <div class="item-head">
+            <div>
+              <h4>${escapeHtml(item.question || "未命名问题")}</h4>
+              <div class="muted">${formatDate(item.created_at)} · ${escapeHtml(item.trace_id || "-")}</div>
+            </div>
+            <span class="badge warn">${escapeHtml(item.provider_name || "fallback")}</span>
+          </div>
+          <div class="badge-row">
+            <span class="badge">总耗时 ${escapeHtml(item.total_latency_ms ?? 0)} ms</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function overlapCard(item) {
+      return `
+        <article class="item">
+          <div class="item-head">
+            <div>
+              <h4>${escapeHtml(item.question || "未命名问题")}</h4>
+              <div class="muted">${formatDate(item.created_at)} · ${escapeHtml(item.trace_id || "-")}</div>
+            </div>
+            <span class="badge fail">${Number(item.retrieval_quality?.avg_query_overlap || 0).toFixed(2)}</span>
+          </div>
+          <div class="badge-row">
+            <span class="badge">最大 overlap ${Number(item.retrieval_quality?.max_query_overlap || 0).toFixed(2)}</span>
+            <span class="badge">命中 ${escapeHtml(item.retrieval_count ?? 0)}</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function switchPanel(panelId) {
+      document.querySelectorAll(".nav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.panel === panelId);
+      });
+      document.querySelectorAll(".panel").forEach((panel) => {
+        panel.classList.toggle("hidden", panel.id !== panelId);
+      });
+    }
+
+    async function loadHealthAndOverview() {
+      const [healthRes, overviewRes] = await Promise.all([
+        requestJson(endpoints.llmHealth),
+        requestJson(endpoints.opsOverview),
+      ]);
+      updateMetaFromHealth(healthRes.data);
+      updateStatsFromOverview(overviewRes.data);
+      $("opsOverviewResult").textContent = formatJson(overviewRes.data);
+      return { health: healthRes.data, overview: overviewRes.data };
+    }
+
+    async function refreshDocs() {
+      const res = await requestJson(endpoints.docsList);
+      state.docs = res.data || [];
+      renderList("docsList", state.docs, docCard, "暂无文档");
+      return res.data;
+    }
+
+    async function refreshConversations() {
+      const res = await requestJson(endpoints.conversations);
+      state.conversations = res.data || [];
+      renderList("conversationList", state.conversations, conversationCard, "暂无会话");
+      bindConversationButtons();
+      return res.data;
+    }
+
+    async function refreshTraces() {
+      const res = await requestJson(endpoints.traces);
+      state.traces = res.data || [];
+      renderList("traceList", state.traces, traceCard, "暂无 Trace");
+      bindTraceButtons();
+      return res.data;
+    }
+
+    async function refreshOpsLists() {
+      const [lowScoreRes, fallbackRes, lowOverlapRes, feedbackRes, evalRes] = await Promise.all([
+        requestJson(endpoints.lowScore),
+        requestJson(endpoints.fallbacks),
+        requestJson(endpoints.lowOverlap),
+        requestJson(endpoints.feedbackList),
+        requestJson(endpoints.evaluations),
+      ]);
+      renderList("lowScoreList", lowScoreRes.data || [], lowScoreCard, "暂无低分评测");
+      renderList("opsFallbackList", fallbackRes.data || [], fallbackCard, "暂无 fallback 记录");
+      renderList("lowOverlapList", lowOverlapRes.data || [], overlapCard, "暂无低 overlap 样本");
+      $("opsAuxResult").textContent = formatJson({
+        feedback: feedbackRes.data || [],
+        evaluations: evalRes.data || [],
+      });
+    }
+
+    function bindConversationButtons() {
+      document.querySelectorAll("[data-conversation-id]").forEach((button) => {
+        button.onclick = async () => {
+          const id = button.dataset.conversationId;
+          const res = await requestJson(endpoints.conversation(id));
+          $("conversationDetail").textContent = formatJson(res.data);
+          $("askConversationId").value = id;
+          showToast(`已加载会话 ${id}`);
+        };
+      });
+    }
+
+    function bindTraceButtons() {
+      document.querySelectorAll("[data-trace-id]").forEach((button) => {
+        button.onclick = async () => {
+          const id = button.dataset.traceId;
+          const res = await requestJson(endpoints.trace(id));
+          $("traceDetail").textContent = formatJson(res.data);
+          $("traceQuickView").textContent = formatJson(res.data);
+          $("feedbackTraceId").value = id;
+          $("evalTraceId").value = id;
+          showToast(`已加载 Trace ${id}`);
+        };
+      });
+    }
+
+    async function login() {
+      const payload = {
+        username: $("loginUsername").value.trim(),
+        password: $("loginPassword").value.trim(),
+      };
+      const res = await requestJson(endpoints.login, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      state.user = res.data;
+      setText("metaUser", `当前用户：${res.data.username} (${res.data.role})`);
+      $("loginResult").textContent = formatJson(res);
+      showToast("登录成功");
+      return res.data;
+    }
+
+    async function uploadDocument() {
+      const file = $("docUpload").files[0];
+      if (!file) {
+        throw new Error("请先选择文件");
+      }
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await requestJson(endpoints.docsUpload, {
+        method: "POST",
+        body: formData,
+      });
+      $("docActionResult").textContent = formatJson(res);
+      await refreshDocs();
+      showToast("文档上传已提交");
+    }
+
+    async function deleteDocument() {
+      const docId = $("deleteDocId").value.trim();
+      if (!docId) {
+        throw new Error("请填写文档 ID");
+      }
+      const auth = getAuth();
+      const res = await requestJson(endpoints.docsDelete(docId, auth.username, auth.password), {
+        method: "DELETE",
+      });
+      $("docActionResult").textContent = formatJson(res);
+      await refreshDocs();
+      showToast(`文档 ${docId} 已删除`);
+    }
+
+    async function askQuestion() {
+      const payload = {
+        question: $("askQuestion").value.trim(),
+        mode: $("askMode").value,
+        top_k: Number($("askTopK").value || 3),
+        return_references: $("askReturnRefs").value === "true",
+        evaluate_answer: $("askEvaluate").value === "true",
+      };
+      const conversationId = $("askConversationId").value.trim();
+      const docId = $("askDocId").value.trim();
+      if (conversationId) payload.conversation_id = Number(conversationId);
+      if (docId) payload.doc_id = Number(docId);
+
+      const res = await requestJson(endpoints.ask, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      state.lastAsk = res.data;
+      $("askResult").textContent = formatJson(res);
+      $("traceQuickView").textContent = formatJson({
+        trace_id: res.data.trace_id,
+        provider_name: res.data.provider_name,
+        rewritten_question: res.data.rewritten_question,
+        timings_ms: res.data.timings_ms,
+        retrieval_quality: res.data.retrieval_quality,
+      });
+      $("feedbackTraceId").value = res.data.trace_id || "";
+      $("evalTraceId").value = res.data.trace_id || "";
+      $("askConversationId").value = res.data.conversation_id || "";
+      $("evalQuestion").value = payload.question;
+      $("evalAnswer").value = res.data.answer || "";
+      $("evalReferences").value = (res.data.references || []).map((item) => item.text || "").join("\n\n");
+      await refreshTraces();
+      await refreshConversations();
+      await loadHealthAndOverview();
+      showToast("问答完成");
+    }
+
+    async function submitFeedback() {
+      const payload = {
+        trace_id: $("feedbackTraceId").value.trim(),
+        rating: $("feedbackRating").value,
+        comment: $("feedbackComment").value.trim(),
+      };
+      const res = await requestJson(endpoints.feedback, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      $("traceQuickView").textContent = formatJson(res);
+      await refreshOpsLists();
+      await loadHealthAndOverview();
+      showToast("反馈已提交");
+    }
+
+    async function evaluateAnswer() {
+      const references = $("evalReferences").value
+        .split(/\n{2,}|\r\n\r\n/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const payload = {
+        trace_id: $("evalTraceId").value.trim() || null,
+        question: $("evalQuestion").value.trim(),
+        answer: $("evalAnswer").value.trim(),
+        expected_answer: $("evalExpectedAnswer").value.trim() || null,
+        references,
+      };
+      const res = await requestJson(endpoints.evaluate, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      $("traceQuickView").textContent = formatJson(res);
+      await refreshOpsLists();
+      await loadHealthAndOverview();
+      showToast("评测完成");
+    }
+
+    async function refreshAll() {
+      try {
+        await Promise.all([
+          loadHealthAndOverview(),
+          refreshDocs(),
+          refreshConversations(),
+          refreshTraces(),
+          refreshOpsLists(),
+        ]);
+        setText("lastUpdated", `最近刷新：${new Date().toLocaleString("zh-CN")}`);
+      } catch (error) {
+        showToast(error.message || "刷新失败", "error");
+        setText("lastUpdated", `刷新失败：${error.message}`);
+      }
+    }
+
+    document.querySelectorAll(".nav button").forEach((button) => {
+      button.addEventListener("click", () => switchPanel(button.dataset.panel));
+    });
+
+    $("openDocsButton").addEventListener("click", () => window.open("/docs", "_blank"));
+    $("refreshAllButton").addEventListener("click", refreshAll);
+    $("loginButton").addEventListener("click", async () => {
+      try {
+        await login();
+        await loadHealthAndOverview();
+      } catch (error) {
+        showToast(error.message, "error");
+        $("loginResult").textContent = error.message;
+      }
+    });
+    $("healthButton").addEventListener("click", async () => {
+      try {
+        const res = await requestJson(endpoints.llmHealth);
+        updateMetaFromHealth(res.data);
+        $("loginResult").textContent = formatJson(res);
+        showToast("模型状态已刷新");
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    $("uploadDocButton").addEventListener("click", async () => {
+      try {
+        await uploadDocument();
+      } catch (error) {
+        showToast(error.message, "error");
+        $("docActionResult").textContent = error.message;
+      }
+    });
+    $("refreshDocsButton").addEventListener("click", async () => {
+      try {
+        await refreshDocs();
+        showToast("文档列表已刷新");
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    $("deleteDocButton").addEventListener("click", async () => {
+      try {
+        await deleteDocument();
+      } catch (error) {
+        showToast(error.message, "error");
+        $("docActionResult").textContent = error.message;
+      }
+    });
+    $("askButton").addEventListener("click", async () => {
+      try {
+        await askQuestion();
+      } catch (error) {
+        showToast(error.message, "error");
+        $("askResult").textContent = error.message;
+      }
+    });
+    $("loadTracesButton").addEventListener("click", async () => {
+      try {
+        await refreshTraces();
+        showToast("最近 Trace 已刷新");
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    $("feedbackButton").addEventListener("click", async () => {
+      try {
+        await submitFeedback();
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    $("evaluateButton").addEventListener("click", async () => {
+      try {
+        await evaluateAnswer();
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    $("refreshConversationsButton").addEventListener("click", async () => {
+      try {
+        await refreshConversations();
+        showToast("会话列表已刷新");
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+    $("refreshTraceListButton").addEventListener("click", async () => {
+      try {
+        await refreshTraces();
+        showToast("Trace 列表已刷新");
+      } catch (error) {
+        showToast(error.message, "error");
+      }
+    });
+
+    refreshAll();
+  </script>
+</body>
+</html>
