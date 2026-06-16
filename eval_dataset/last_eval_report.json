@@ -1,0 +1,258 @@
+{
+  "base_url": "http://127.0.0.1:8000",
+  "cases_path": "E:\\FASTAPI_CODE\\FastAPI-RAG-Spark-main\\eval_dataset\\qa_cases.jsonl",
+  "documents_dir": "E:\\FASTAPI_CODE\\FastAPI-RAG-Spark-main\\eval_dataset\\documents",
+  "uploaded_documents": [
+    {
+      "source_doc": "system_overview",
+      "doc_path": "E:\\FASTAPI_CODE\\FastAPI-RAG-Spark-main\\eval_dataset\\documents\\system_overview.docx",
+      "doc_id": 9,
+      "filename": "system_overview.docx",
+      "status": "ready"
+    },
+    {
+      "source_doc": "llm_and_eval_notes",
+      "doc_path": "E:\\FASTAPI_CODE\\FastAPI-RAG-Spark-main\\eval_dataset\\documents\\llm_and_eval_notes.pdf",
+      "doc_id": 10,
+      "filename": "llm_and_eval_notes.pdf",
+      "status": "ready"
+    },
+    {
+      "source_doc": "ingestion_and_ops",
+      "doc_path": "E:\\FASTAPI_CODE\\FastAPI-RAG-Spark-main\\eval_dataset\\documents\\ingestion_and_ops.txt",
+      "doc_id": 11,
+      "filename": "ingestion_and_ops.txt",
+      "status": "ready"
+    }
+  ],
+  "summary": {
+    "case_count": 1,
+    "avg_score": 85.0,
+    "pass_rate": 1.0,
+    "avg_keyword_hit_ratio": 1.0,
+    "avg_reference_count": 3.0
+  },
+  "results": [
+    {
+      "id": "case_001",
+      "category": "fact",
+      "mode": "rag",
+      "source_doc": "system_overview",
+      "doc_id": null,
+      "question": "这个系统支持哪些文档格式？",
+      "trace_id": "18fb8c24c2b14f47a7b766b9d61290db",
+      "conversation_id": 112,
+      "provider_name": "spark",
+      "answer": "这个系统支持的文档格式包括TXT、PDF和DOCX。",
+      "expected_answer": "系统支持 TXT、PDF、DOCX 文档上传与解析。",
+      "keyword_hit_ratio": 1.0,
+      "reference_count": 3,
+      "score": 85,
+      "verdict": "pass",
+      "groundedness": 4,
+      "relevance": 3,
+      "completeness": 3,
+      "clarity": 3,
+      "timings_ms": {
+        "rewrite": 0,
+        "retrieval": 11,
+        "generation": 1594,
+        "total": 1640
+      },
+      "retrieval_quality": {
+        "query_token_count": 12,
+        "hit_count": 3,
+        "avg_query_overlap": 0.5,
+        "max_query_overlap": 0.6667
+      }
+    }
+  ],
+  "failures": [
+    {
+      "id": "case_002",
+      "question": "这个系统有哪些问答模式？",
+      "source_doc": "system_overview",
+      "error": "('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None))"
+    },
+    {
+      "id": "case_003",
+      "question": "系统用什么做稠密向量检索？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_004",
+      "question": "系统用什么生成文本向量？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_005",
+      "question": "每次问答都会生成什么追踪标识？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_006",
+      "question": "多轮会话会生成什么会话标识？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_007",
+      "question": "系统的混合检索是怎么做的？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_008",
+      "question": "只根据知识文档，这个系统的整体能力可以怎么概括？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_009",
+      "question": "系统会记录哪些阶段耗时？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_010",
+      "question": "那它有哪些问答模式？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_011",
+      "question": "向量部分和稀疏部分分别是什么？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_012",
+      "question": "指定文档里提到了哪些问答模式？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_013",
+      "question": "指定文档里提到系统支持哪些文档格式？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_014",
+      "question": "指定文档里提到系统会生成什么追踪标识？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_015",
+      "question": "只看指定文档，系统为什么要做混合检索？",
+      "source_doc": "system_overview",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_016",
+      "question": "系统默认使用哪个主模型 Provider？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_017",
+      "question": "哪个 Provider 可以作为 fallback？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_018",
+      "question": "主模型不可用时系统会怎么做？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_019",
+      "question": "系统里的回答评测是怎么做的？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_020",
+      "question": "评测会综合考虑哪些维度？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_021",
+      "question": "评测结果会保存到哪个表？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_022",
+      "question": "用户反馈会保存到哪个表？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_023",
+      "question": "问答链路 Trace 会保存到哪个表？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_024",
+      "question": "运营侧可以查看哪些与模型和评测相关的样本？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_025",
+      "question": "默认主模型和 fallback 分别是什么？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_026",
+      "question": "指定文档里提到评测会考虑哪些维度？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_027",
+      "question": "只看指定文档，怎么概括系统的评测与运营闭环？",
+      "source_doc": "llm_and_eval_notes",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_028",
+      "question": "文档上传是同步一次性处理完成吗？",
+      "source_doc": "ingestion_and_ops",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_029",
+      "question": "文档入库流程包括哪些步骤？",
+      "source_doc": "ingestion_and_ops",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_030",
+      "question": "文档状态可能有哪些？",
+      "source_doc": "ingestion_and_ops",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_031",
+      "question": "这个轻量前端控制台支持哪些操作？",
+      "source_doc": "ingestion_and_ops",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    },
+    {
+      "id": "case_032",
+      "question": "指定文档里提到控制台可以查看哪些运营样本？",
+      "source_doc": "ingestion_and_ops",
+      "error": "HTTPConnectionPool(host='127.0.0.1', port=8000): Max retries exceeded with url: /api/v1/question/ask (Caused by NewConnectionError(\"HTTPConnection(host='127.0.0.1', port=8000): Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。\"))"
+    }
+  ]
+}

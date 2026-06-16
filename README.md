@@ -265,6 +265,74 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8000
 - 人工构造的 `expected_answer`
 - 真实用户反馈
 
+## 内置评测集
+
+项目已经提供了一套可直接运行的本地评测集结构：
+
+```text
+  eval_dataset/
+    documents/
+      system_overview.docx
+      llm_and_eval_notes.pdf
+      ingestion_and_ops.txt
+    qa_cases.jsonl
+    last_eval_report.json
+
+scripts/
+  run_eval.py
+```
+
+说明：
+
+- `eval_dataset/documents/system_overview.docx`
+  用于覆盖系统总览、问答模式、混合检索和 Trace 能力。
+- `eval_dataset/documents/llm_and_eval_notes.pdf`
+  用于覆盖 Provider、fallback、评测维度和评测落库。
+- `eval_dataset/documents/ingestion_and_ops.txt`
+  用于覆盖文档入库链路、文档状态和前端控制台操作。
+- `eval_dataset/qa_cases.jsonl`
+  保存 32 条评测样本，覆盖事实问答、总结问答、多轮追问和 doc 模式场景，并按三份文档分布。
+- `scripts/run_eval.py`
+  批量调用 `/ask` 和 `/evaluate`，自动上传三份样例文档并输出评测报告。
+
+### 推荐使用方式
+
+1. 先启动服务
+
+```powershell
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+2. 直接运行一键评测
+
+```powershell
+python scripts/run_eval.py
+```
+
+默认会自动完成：
+
+- 从 `eval_dataset/qa_cases.jsonl` 读取样本
+- 自动上传 `eval_dataset/documents/` 下的 3 份评测文档
+- 自动等待 3 份文档全部入库完成
+- 自动按 `source_doc` 为 doc 模式样本分配新的 `doc_id`
+- 自动执行问答和评测
+- 自动把结果保存到 `eval_dataset/last_eval_report.json`
+
+可选参数：
+
+```powershell
+python scripts/run_eval.py --base-url http://127.0.0.1:8000 --cases eval_dataset/qa_cases.jsonl --documents-dir eval_dataset/documents
+```
+
+输出报告中会包含：
+
+- `avg_score`
+- `pass_rate`
+- `avg_keyword_hit_ratio`
+- `avg_reference_count`
+- 每条样本的 `trace_id`、`provider_name`、`retrieval_quality`
+- 本轮自动上传的文档列表和对应 `doc_id`
+
 ## 注意事项
 
 - `core/redis_client.py` 目前仍是 mock 实现，所以启动项目不需要真实 Redis。
